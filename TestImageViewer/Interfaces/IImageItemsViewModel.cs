@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.Windows;
+using TestImageViewer.Helpers;
 
 namespace TestImageViewer.Interfaces
 {
@@ -9,20 +10,25 @@ namespace TestImageViewer.Interfaces
 
         IImageItem SelectedImageItem { get; set; }
 
-        IList<string> KnownFileTypes { get; }
-
         bool PreviewModeOn { get; set; }
-
-        void AddImageItems(List<string> fileNames);
 
         bool PreviousImageItemAvailable { get; }
 
         bool NextImageItemAvailable { get; }
 
-        void SelectNextImageItem();
+        DelegateCommand<string> ScrollUpCommand { get; }
 
-        void SelectPreviousImageItem();
+        DelegateCommand<string> ScrollDownCommand { get; }
 
-        void ApplyBlurFilter();
+        DelegateCommand<string> ApplyBlurCommand { get; }
+
+        DelegateCommand<string> SwitchToPreviewModeCommand { get; }
+
+        DelegateCommand<string> SwitchToListViewModeCommand { get; }
+ 
+        DelegateCommand<string> OpenFilesCommand { get; }
+
+        DelegateCommand<IDataObject> DropFilesCommand { get; }
+
     }
 }

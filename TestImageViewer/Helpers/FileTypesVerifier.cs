@@ -4,13 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Security;
 using Microsoft.Win32;
+using TestImageViewer.Interfaces;
 
 namespace TestImageViewer.Helpers
 {
     /// <summary>
     /// Provides list of known file types and method for its verification
     /// </summary>
-    public class FileTypesVerifier
+    public class FileTypesVerifier : IFileTypesVerifier
     {
         private const string PhotoViewerFileAssociationsPath = @"SOFTWARE\Microsoft\Windows Photo Viewer\Capabilities\FileAssociations";
         

@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using TestImageViewer.Helpers;
 using TestImageViewer.Interfaces;
+using TestImageViewer.Models;
 
 namespace TestImageViewer.ViewModels
 {
@@ -20,15 +22,77 @@ namespace TestImageViewer.ViewModels
         private bool previousImageItemAvailable;
         private bool isPreviewModeOn;
 
-        private readonly FileTypesVerifier fileTypesVerifier;
+        private DelegateCommand<string> scrollUpCommand;
+        private DelegateCommand<string> scrollDownCommand;
+        private DelegateCommand<string> applyBlurCommand;
+        private DelegateCommand<string> switchToPreviewModeCommand;
+        private DelegateCommand<string> switchToListViewModeCommand;
+        private DelegateCommand<string> openFilesCommand;
+        private DelegateCommand<IDataObject> dropFilesCommand;
 
-        public ImageItemsViewModel(IImagesModel imageItemModel)
+        private readonly IFileTypesVerifier fileTypesVerifier;
+        private readonly IOpenFileService openFileService;
+
+        public ImageItemsViewModel(IOpenFileService openFileService, IFileTypesVerifier fileTypesVerifier)
         {
-            model = imageItemModel;
-            fileTypesVerifier = new FileTypesVerifier();
+            model = new ImagesModel();
+            this.fileTypesVerifier = fileTypesVerifier;
+            this.openFileService = openFileService;
+
+            InitCommands();
+        }
+
+        private void InitCommands()
+        {
+            scrollUpCommand = new DelegateCommand<string>(s => SelectPreviousImageItem());
+            scrollDownCommand = new DelegateCommand<string>(s => SelectNextImageItem());
+            applyBlurCommand = new DelegateCommand<string>(s => ApplyBlurFilter());
+            switchToPreviewModeCommand = new DelegateCommand<string>(s => SwitchToPreviewMode());
+            switchToListViewModeCommand = new DelegateCommand<string>(s => { PreviewModeOn = false; });
+            openFilesCommand = new DelegateCommand<string>(s => OpenFiles());
+            dropFilesCommand = new DelegateCommand<IDataObject>(DropFiles);
         }
 
         #region IImageItemsViewModel
+
+        #region Commands
+
+        public DelegateCommand<string> ScrollUpCommand
+        {
+            get { return scrollUpCommand; }
+        }
+
+        public DelegateCommand<string> ScrollDownCommand
+        {
+            get { return scrollDownCommand; }
+        }
+
+        public DelegateCommand<string> ApplyBlurCommand
+        {
+            get { return applyBlurCommand; }
+        }
+
+        public DelegateCommand<string> SwitchToPreviewModeCommand
+        {
+            get { return switchToPreviewModeCommand; }
+        }
+
+        public DelegateCommand<string> SwitchToListViewModeCommand
+        {
+            get { return switchToListViewModeCommand; }
+        }
+
+        public DelegateCommand<string> OpenFilesCommand
+        {
+            get { return openFilesCommand; }
+        }
+
+        public DelegateCommand<IDataObject> DropFilesCommand
+        {
+            get { return dropFilesCommand; }
+        }
+
+        #endregion Commands
 
         public ObservableCollection<IImageItem> ImageItems
         {
@@ -66,11 +130,6 @@ namespace TestImageViewer.ViewModels
             }
         }
 
-        public IList<string> KnownFileTypes
-        {
-            get { return fileTypesVerifier.FileTypes; }
-        }
-
         public bool PreviewModeOn
         {
             get { return isPreviewModeOn; }
@@ -81,7 +140,11 @@ namespace TestImageViewer.ViewModels
             }
         }
 
-        public void AddImageItems(List<string> fileNames)
+        #endregion IImageItemsViewModel
+
+        #region Methods
+
+        private void AddImageItems(IEnumerable<string> fileNames)
         {
             model.AddImageItems(fileNames.Where(f => fileTypesVerifier.IsFileTypeKnown(f)).ToList());
             if (model.ImageItems.Count > 0)
@@ -118,7 +181,7 @@ namespace TestImageViewer.ViewModels
             }
         }
 
-        public void ApplyBlurFilter()
+        private void ApplyBlurFilter()
         {
             if (SelectedImageItem == null)
             {
@@ -131,8 +194,6 @@ namespace TestImageViewer.ViewModels
                 SelectedImageItem = model.UpdateImageItem(SelectedImageItem, newfilePath);
             }
         }
-
-        #endregion IImageItemsViewModel
 
         private void CheckNavigationAvailability()
         {
@@ -148,5 +209,40 @@ namespace TestImageViewer.ViewModels
             PreviousImageItemAvailable = (currentIndex - 1) >= 0;
         }
 
+        private void SwitchToPreviewMode()
+        {
+            if (SelectedImageItem != null)
+            {
+                PreviewModeOn = true;
+            }
+        }
+
+        private void OpenFiles()
+        {
+            string filter = String.Concat("All types (*", String.Join(",*", fileTypesVerifier.FileTypes), ")|*",
+                String.Join(";*", fileTypesVerifier.FileTypes));
+            IList<string> filesList = openFileService.OpenFileDialog(filter);
+            if (filesList.Any())
+            {
+                AddImageItems(filesList);
+            }
+        }
+
+        private void DropFiles(IDataObject data)
+        {
+            object dataValue = data.GetData(DataFormats.FileDrop);
+            string[] files = dataValue as string[];
+            if (files == null)
+            {
+                throw new ArgumentException("data");
+            }
+            
+            if (files.Length > 0)
+            {
+                AddImageItems(files.ToList());
+            }
+        }
+
+        #endregion Methods
     }
 }
