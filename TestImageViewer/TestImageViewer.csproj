@@ -65,6 +65,7 @@
     <Compile Include="Converters\DependentBoolToVisibilityConverter.cs" />
     <Compile Include="Converters\ImageSourceConverter.cs" />
     <Compile Include="Converters\ListViewSizeConverter.cs" />
+    <Compile Include="Helpers\BitmapHelper.cs" />
     <Compile Include="Helpers\BlurFilterHelper.cs" />
     <Compile Include="Helpers\DelegateCommand.cs" />
     <Compile Include="Behaviors\DragAndDropFilesBehavior.cs" />

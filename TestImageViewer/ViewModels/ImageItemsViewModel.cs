@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media.Imaging;
 using TestImageViewer.Helpers;
 using TestImageViewer.Interfaces;
 using TestImageViewer.Models;
@@ -15,6 +16,8 @@ namespace TestImageViewer.ViewModels
         public const string NextImageItemAvailablePropertyName = "NextImageItemAvailable";
         public const string PreviousImageItemAvailablePropertyName = "PreviousImageItemAvailable";
         private const string PreviewModeOnPropertyName = "PreviewModeOn";
+        private const string IsSelectedImageBlurredPropertyName = "IsSelectedImageBlurred";
+        private const string SelectedFullImagePropertyName = "SelectedFullImage";
 
         private readonly IImagesModel model;
         private IImageItem selectedImageItem;
@@ -24,7 +27,6 @@ namespace TestImageViewer.ViewModels
 
         private DelegateCommand<string> scrollUpCommand;
         private DelegateCommand<string> scrollDownCommand;
-        private DelegateCommand<string> applyBlurCommand;
         private DelegateCommand<string> switchToPreviewModeCommand;
         private DelegateCommand<string> switchToListViewModeCommand;
         private DelegateCommand<string> openFilesCommand;
@@ -46,7 +48,6 @@ namespace TestImageViewer.ViewModels
         {
             scrollUpCommand = new DelegateCommand<string>(s => SelectPreviousImageItem());
             scrollDownCommand = new DelegateCommand<string>(s => SelectNextImageItem());
-            applyBlurCommand = new DelegateCommand<string>(s => ApplyBlurFilter());
             switchToPreviewModeCommand = new DelegateCommand<string>(s => SwitchToPreviewMode());
             switchToListViewModeCommand = new DelegateCommand<string>(s => { PreviewModeOn = false; });
             openFilesCommand = new DelegateCommand<string>(s => OpenFiles());
@@ -65,11 +66,6 @@ namespace TestImageViewer.ViewModels
         public DelegateCommand<string> ScrollDownCommand
         {
             get { return scrollDownCommand; }
-        }
-
-        public DelegateCommand<string> ApplyBlurCommand
-        {
-            get { return applyBlurCommand; }
         }
 
         public DelegateCommand<string> SwitchToPreviewModeCommand
@@ -104,11 +100,66 @@ namespace TestImageViewer.ViewModels
             get { return selectedImageItem; }
             set
             {
+                if (selectedImageItem != null && selectedImageItem != value)
+                {
+                    selectedImageItem.ClearFullImage();
+                }
                 selectedImageItem = value;
                 NotifyPropertyChanged(SelectedItemPropertyName);
                 CheckNavigationAvailability();
+                if (PreviewModeOn)
+                {
+                    NotifyPropertyChanged(IsSelectedImageBlurredPropertyName);
+                    NotifyPropertyChanged(SelectedFullImagePropertyName);
+                }
             }
         }
+
+        public BitmapImage SelectedFullImage
+        {
+            get
+            {
+                if (SelectedImageItem == null || !PreviewModeOn)
+                {
+                    return null;
+                }
+                return SelectedImageItem.FullImage;
+            }
+        }
+
+        public bool IsSelectedImageBlurred
+        {
+            get { return selectedImageItem.IsBlurred; }
+            
+            set
+            {
+                if (SelectedImageItem == null)
+                {
+                    return;
+                }
+
+                if (SelectedImageItem.IsBlurred)
+                {
+                    SelectedImageItem.IsBlurred = false;
+                }
+                else
+                {
+                    if (!SelectedImageItem.HasBlurredImage)
+                    {
+                        BitmapImage newImage = BlurFilterHelper.ApplyBlur(SelectedImageItem.Image);
+                        if (newImage != null)
+                        {
+                            model.UpdateImageItem(SelectedImageItem, newImage);
+                        }
+                    }
+                    SelectedImageItem.IsBlurred = true;
+                }
+                NotifyPropertyChanged(IsSelectedImageBlurredPropertyName);
+                NotifyPropertyChanged(SelectedItemPropertyName);
+                NotifyPropertyChanged(SelectedFullImagePropertyName);
+            }
+        }
+
 
         public bool NextImageItemAvailable
         {
@@ -137,6 +188,7 @@ namespace TestImageViewer.ViewModels
             {
                 isPreviewModeOn = value;
                 NotifyPropertyChanged(PreviewModeOnPropertyName);
+                NotifyPropertyChanged(SelectedFullImagePropertyName);
             }
         }
 
@@ -178,20 +230,6 @@ namespace TestImageViewer.ViewModels
             if (currentIndex >= 0)
             {
                 SelectedImageItem = ImageItems[currentIndex];
-            }
-        }
-
-        private void ApplyBlurFilter()
-        {
-            if (SelectedImageItem == null)
-            {
-                return;
-            }
-
-            string newfilePath = BlurFilterHelper.ApplyBlur(SelectedImageItem.Image, SelectedImageItem.FilePath);
-            if (!String.IsNullOrEmpty(newfilePath))
-            {
-                SelectedImageItem = model.UpdateImageItem(SelectedImageItem, newfilePath);
             }
         }
 

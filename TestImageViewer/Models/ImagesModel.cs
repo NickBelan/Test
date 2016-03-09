@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using TestImageViewer.Interfaces;
 
 namespace TestImageViewer.Models
@@ -22,13 +24,15 @@ namespace TestImageViewer.Models
 
             foreach (string filePath in fileNames)
             {
-                ImageItems.Add(new ImageItem(filePath));
+                string path = filePath;
+                Task<ImageItem>.Factory.StartNew(() => new ImageItem(path)).ContinueWith(
+                    task => ImageItems.Add(task.Result), TaskScheduler.FromCurrentSynchronizationContext());
             }
         }
 
-        public IImageItem UpdateImageItem(IImageItem updatedItem, string newFilePath)
+        public IImageItem UpdateImageItem(IImageItem updatedItem, BitmapImage newImage)
         {
-            return GetImageItem(updatedItem.Id).Update(updatedItem, newFilePath);
+            return GetImageItem(updatedItem.Id).Update(newImage);
         }
 
         private IImageItem GetImageItem(Guid projectId)

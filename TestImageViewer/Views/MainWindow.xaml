@@ -41,7 +41,7 @@
                       VerticalAlignment="Stretch" 
                       Background="PowderBlue"  
                       AllowDrop ="true" 
-                      ItemsSource="{Binding Path=ImageItems}"
+                      ItemsSource="{Binding Path=ImageItems, IsAsync=True}"
                       behaviors:ScrollToSelectedBehavior.SelectedValue="{Binding Path=SelectedImageItem}"
                       SelectedItem="{Binding Path=SelectedImageItem, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay }">
                  <ListView.Style>
@@ -88,7 +88,7 @@
                             Content="{StaticResource ScrollUpImage}" 
                             Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                             IsEnabled="{Binding Path=PreviousImageItemAvailable, Mode=OneWay}"/>
-                    <Button Name="BlurButton" Command="{Binding ApplyBlurCommand}" >Blur</Button>
+                    <ToggleButton  Name="BlurButton" IsChecked="{Binding IsSelectedImageBlurred, Mode=TwoWay}" >Blur</ToggleButton >
                     <Button Name="ScrollDownButton" 
                             Command="{Binding ScrollDownCommand}" 
                             Content="{StaticResource ScrollDownImage}" 
@@ -96,7 +96,7 @@
                             IsEnabled="{Binding Path=NextImageItemAvailable, Mode=OneWay}"/>
 
                     <StackPanel.Resources>
-                        <Style TargetType="{x:Type Button}">
+                        <Style TargetType="{x:Type ToggleButton }">
                             <Setter Property="Margin" Value="0,50,0,50"/>
                             <Setter Property="Height" Value="70"/>
                         </Style>
@@ -107,7 +107,7 @@
             <Image Name="PreviewImage" 
                    HorizontalAlignment="Stretch" 
                    VerticalAlignment="Stretch"
-                   Source="{Binding Path=SelectedImageItem, Converter={StaticResource ImageSourceConverter}}" Margin="5"/>
+                   Source="{Binding Path=SelectedFullImage}" Margin="5"/>
 
         </DockPanel>
     </Grid>

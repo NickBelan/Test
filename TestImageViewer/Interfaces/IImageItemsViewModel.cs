@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Media.Imaging;
 using TestImageViewer.Helpers;
 
 namespace TestImageViewer.Interfaces
@@ -10,17 +11,19 @@ namespace TestImageViewer.Interfaces
 
         IImageItem SelectedImageItem { get; set; }
 
+        BitmapImage SelectedFullImage { get; }
+
         bool PreviewModeOn { get; set; }
 
         bool PreviousImageItemAvailable { get; }
 
         bool NextImageItemAvailable { get; }
 
+        bool IsSelectedImageBlurred { get; set; }
+
         DelegateCommand<string> ScrollUpCommand { get; }
 
         DelegateCommand<string> ScrollDownCommand { get; }
-
-        DelegateCommand<string> ApplyBlurCommand { get; }
 
         DelegateCommand<string> SwitchToPreviewModeCommand { get; }
 

@@ -7,11 +7,19 @@ namespace TestImageViewer.Interfaces
     {
         string FilePath { get; }
 
+        bool IsBlurred { get; set; }
+
+        bool HasBlurredImage { get; }
+
         BitmapImage Image { get; }
+
+        BitmapImage FullImage { get; }
 
         Guid Id { get; }
 
-        IImageItem Update(IImageItem updatedItem, string newFilePath);
+        IImageItem Update(BitmapImage updatedImage);
+
+        void ClearFullImage();
 
     }
 }
