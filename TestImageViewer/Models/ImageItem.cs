@@ -13,8 +13,9 @@ namespace TestImageViewer.Models
         private const int ThumbnailSize = 200;
 
         private bool isBlurred;
+        private int rotationDegree;
         private BitmapImage image;
-        private BitmapImage fullImage;
+        private BitmapSource fullImage;
         private BitmapImage blurredImage;
         private BitmapImage blurredThumbnailImage;
 
@@ -55,7 +56,7 @@ namespace TestImageViewer.Models
             }
         }
 
-        public BitmapImage FullImage
+        public BitmapSource FullImage
         {
             get
             {
@@ -67,13 +68,8 @@ namespace TestImageViewer.Models
                 {
                     return fullImage;
                 }
-                return fullImage = LoadFullImage(FilePath);
+                return fullImage = BitmapHelper.LoadBitmapSource(FilePath, rotationDegree);
             }
-        }
-
-        public void ClearFullImage()
-        {
-            fullImage = null;
         }
 
         #region Methods
@@ -91,11 +87,6 @@ namespace TestImageViewer.Models
             Image = thumbnail;
 
             FilePath = filePath;
-        }
-
-        private BitmapImage LoadFullImage(string filePath)
-        {
-            return BitmapHelper.ConvertBitmap2BitmapImage(new Bitmap(LoadImageFromFile(filePath)));
         }
 
         public IImageItem Update(BitmapImage newBlurredImage)
@@ -123,7 +114,7 @@ namespace TestImageViewer.Models
 
         private Image LoadImageFromFile(string fileName)
         {
-            return BitmapHelper.ReadImageWithOrientation(fileName);
+            return BitmapHelper.ReadImageWithOrientation(fileName, out rotationDegree);
         }
 
         #endregion Methods

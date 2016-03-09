@@ -11,7 +11,7 @@ namespace TestImageViewer.Interfaces
 
         IImageItem SelectedImageItem { get; set; }
 
-        BitmapImage SelectedFullImage { get; }
+        BitmapSource SelectedFullImage { get; }
 
         bool PreviewModeOn { get; set; }
 

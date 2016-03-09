@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace TestImageViewer.Helpers
@@ -55,8 +55,9 @@ namespace TestImageViewer.Helpers
             return image.GetThumbnailImage(destWidth, destHeight, null, (IntPtr) 0);
         }
 
-        public static Image ReadImageWithOrientation(string fileName)
+        public static Image ReadImageWithOrientation(string fileName, out int rotationDegree)
         {
+            rotationDegree = 0;
             Image originalImage = Image.FromFile(fileName);
             if (originalImage.PropertyIdList.Contains(0x0112))
             {
@@ -67,19 +68,57 @@ namespace TestImageViewer.Helpers
                         break;
 
                     case 8: // 90 right
+                        rotationDegree = 90;
                         originalImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
                         break;
 
                     case 3: // bottom up
+                        rotationDegree = 180;
                         originalImage.RotateFlip(RotateFlipType.Rotate180FlipNone);
                         break;
 
                     case 6: // 90 left
+                        rotationDegree = 270;
                         originalImage.RotateFlip(RotateFlipType.Rotate90FlipNone);
                         break;
                 }
             }
             return originalImage;
+        }
+
+        public static BitmapSource LoadBitmapSource(string fileName, int rotationDegree)
+        {
+            TransformedBitmap transformedBitmap = new TransformedBitmap();
+
+            BitmapImage image = new BitmapImage();
+            image.BeginInit();
+            image.UriSource = new Uri(fileName, UriKind.RelativeOrAbsolute);
+            image.EndInit();
+
+            transformedBitmap.BeginInit();
+            transformedBitmap.Source = image;
+
+            RotateTransform transform = null;
+            switch (rotationDegree)
+            {
+                case 90:
+                    transform = new RotateTransform(-90);
+                    break;
+                case 180:
+                    transform = new RotateTransform(0);
+                    break;
+                case 270:
+                    transform = new RotateTransform(90);
+                    break;
+
+            }
+
+            if (transform != null)
+            {
+                transformedBitmap.Transform = transform;
+            }
+            transformedBitmap.EndInit();
+            return transformedBitmap;
         }
     }
 }

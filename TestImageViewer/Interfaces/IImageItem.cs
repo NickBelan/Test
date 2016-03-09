@@ -13,13 +13,11 @@ namespace TestImageViewer.Interfaces
 
         BitmapImage Image { get; }
 
-        BitmapImage FullImage { get; }
+        BitmapSource FullImage { get; }
 
         Guid Id { get; }
 
         IImageItem Update(BitmapImage updatedImage);
-
-        void ClearFullImage();
 
     }
 }

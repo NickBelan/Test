@@ -100,10 +100,6 @@ namespace TestImageViewer.ViewModels
             get { return selectedImageItem; }
             set
             {
-                if (selectedImageItem != null && selectedImageItem != value)
-                {
-                    selectedImageItem.ClearFullImage();
-                }
                 selectedImageItem = value;
                 NotifyPropertyChanged(SelectedItemPropertyName);
                 CheckNavigationAvailability();
@@ -115,7 +111,7 @@ namespace TestImageViewer.ViewModels
             }
         }
 
-        public BitmapImage SelectedFullImage
+        public BitmapSource SelectedFullImage
         {
             get
             {
